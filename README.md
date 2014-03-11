@@ -4,7 +4,7 @@
 <body>
 <h2>Installation</h2>
 <div>
-  <code>git clone https://github.com/wesmadrigal/datbit.git</code><br>
+  <code>git clone https://github.com/wesmadrigal/bitdata.git</code><br>
   <code>python setup.py install</code><br>
 </div>
 <h2>Usage</h2>
