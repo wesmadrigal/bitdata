@@ -11,6 +11,147 @@ class BitData(object):
         self._requests = 0
         self._request_session = 0
 
+    """
+    Section 1:
+        interface for bit.ly link shortening
+        and unshortening functionality
+    """
+
+    def expand(self, short_url):
+        """ Returns the canonical expanded version of a bit.ly short url """
+
+        api = 'https://api-ssl.bitly.com/v3/expand?shortUrl={0}&access_token={1}'
+        try:
+            req = urllib2.Request(api.format(short_url, self._token))
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200,300):
+                raise BitDataException("Link Expansion Error")
+        
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+    def info(self, short_url):
+        """ Returns some basic info on a bit.ly short url """
+
+        api = 'https://api-ssl.bitly.com/v3/info?shortUrl={0}&access_token={1}'
+        try:
+            req = urllib2.Request(api.format(short_url, self._token))
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200,300):
+                raise BitDataException("Link Info Error")
+ 
+        except urllib2.URLError:
+            sys.exit(0)
+        
+        return json.loads(resp.read())
+
+    
+    def lookup_link(self, link):
+        """ Returns bit.ly short url for the parameterized link if it exists """
+
+        api = 'https://api-ssl.bitly.com/v3/link/lookup?access_token={0}&url={1}' 
+        try:
+            req = urllib2.Request(api.format(self._token, link))
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200,300):
+                raise BitDataException("Link Lookup Error")
+            
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def shorten(self, link, domain=None):
+        """ Returns shortened url """
+
+        api = 'https://api-ssl.bitly.com/v3/shorten?access_token={0}&longUrl={1}'
+        if domain:
+            api += '&domain={2}'
+
+        try:
+            formatted = api.format(self._token, link) if not domain else api.format(self._token, link, domain)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200,300):
+                raise BitDataException("Shorten Link Error")
+         
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())   
+
+
+    def link_edit(self, edit_fields, edits, link):
+        """
+        Arguments
+
+        edit_fields -- list
+        edits       -- list
+        link        -- string
+
+        Returns affirmation json
+        """
+
+        api = 'https://api-ssl.bitly.com/v3/user/link_edit?access_token={0}&edit={1}&{2}&link={3}'
+        try:
+            fields = ','.join(edit_fields)
+            edits = [ 
+                      '{0}={1}'.format(edit_fields[i], edits[i].replace(' ', '+'))
+                      for i in range(len(edits))
+                    ]
+            edits = '&'.join(edits)
+            formatted = api.format(self._token, fields, edits, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200,300):
+                raise BitDataException("Link Edit Error")
+     
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+             
+                    
+    def user_link_lookup(self, link):
+        """ Returns bit.ly short url(s) from a canonical url """
+
+        api = 'https://api-ssl.bitly.com/v3/user/link_lookup?access_token={0}&url={1}' 
+        try:
+            req = urllib2.Request(api.format(self._token, link))
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("User Link Lookup Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def user_link_save(self, link):
+        """ Returns json containing 1 if first request for save 0 if not """
+
+        api = 'https://api-ssl.bitly.com/v3/user/link_save?access_token={0}&longUrl={1}' 
+        try:
+            req = urllib2.Request(api.format(self._token, link))
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("User Link Save Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+   
+    """
+    Section 2:
+        bit.lys data APIs
+    """
+
     def high_value(self, limit=2):
         api = 'https://api-ssl.bitly.com/v3/highvalue?access_token={0}&limit={1}'
         try:
