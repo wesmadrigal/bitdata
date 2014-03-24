@@ -153,6 +153,8 @@ class BitData(object):
     """
 
     def high_value(self, limit=2):
+        """ Returns a specified number of "high-value" bitly links that are popular across bitly at this particular moment. """
+
         api = 'https://api-ssl.bitly.com/v3/highvalue?access_token={0}&limit={1}'
         try:
             req = urllib2.Request(api.format(self._token, limit))
@@ -166,10 +168,34 @@ class BitData(object):
         return json.loads(resp.read())
 
 
-    def search(self, term):
-        api = 'https://api-ssl.bitly.com/v3/search?access_token={0}&phrase={1}'
+    def search(self, query_term, **kwargs):
+        """ 
+        Returns a json blob with links of queries 
+         
+        Params
+       
+            limit        -- int
+            offset       -- int
+            query        -- string
+            lang         -- string
+            cities       -- list
+            domain       -- string
+            full_domain  -- string
+            fields       -- list
+      
+        """ 
+
+        api = 'https://api-ssl.bitly.com/v3/search?access_token={0}&query={1}'
         try:
-            req = urllib2.Request(api.format(self._token, term))
+            for each in kwargs.items():
+                if isinstance(each[1], str):
+                    api += '&' + each[0] + '=' + each[1].replace(' ', '+').lower()
+                elif isinstance(each[1], int):
+                    api += '&' + each[0] + '=' + str(each[1])
+                elif isinstance(each[1], list):
+                    api += '&' + each[0] + '=' + ','.join(each[1]).lower().replace(' ', '+')
+            formatted = api.format(self._token, query_term)
+            req = urllib2.Request(formatted)
             resp = urllib2.urlopen(req)
             if resp.code not in range(200,300):
                 raise BitDataException("Search Error")
@@ -354,6 +380,129 @@ class BitData(object):
 
         return data
 
+    """
+    Section 3:
+        link metrics
+    """
+
+    def link_clicks(self, link, **kwargs):
+        """ Returns the number of clicks on a bit.ly shortened link """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/clicks?access_token={0}&link={1}'
+        try:
+            if kwargs.items() != []:
+                api += '&'.join(map(lambda x: x[0] + '=' + str(x[1]), kwargs.items()))
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Clicks Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def link_countries(self, link, **kwargs):
+        """ Returns the countries visiting a bit.ly shortened link """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/countries?access_token={0}&link={1}'
+        try:
+            if kwargs.items() != []:
+                api += '&'.join(map(lambda x: x[0] + '=' + str(x[1]), kwargs.items()))
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Clicks Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def link_encoders(self, link, **kwargs):
+        """ Returns the users who have encoded a bit.ly shortened link """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/encoders?access_token={0}&link={1}'
+        try:
+            if kwargs.items() != []:
+                api += '&'.join(map(lambda x: x[0] + '=' + str(x[1]), kwargs.items()))
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Encoders Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def link_encoders_by_count(self, link, **kwargs):
+        """
+            Returns the users who have encoded a bit.ly shortened link sorted by 
+            the number of clicks the encoded link got
+        """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/encoders_by_count?access_token={0}&link={1}'
+        try:
+            if kwargs.items() != []:
+                api += '&'.join(map(lambda x: x[0] + '=' + str(x[1]), kwargs.items()))
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Encoders By Count Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    def link_encoders_count(self, link):
+        """ Returns the number of users who have encoded a bit.ly shortened link """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/encoders_count?access_token={0}&link={1}'
+        try:
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Encoders Count Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+    def link_referrers(self, link, **kwargs):
+        """
+            Returns the users who have encoded a bit.ly shortened link sorted by 
+            the number of clicks the encoded link got
+        """
+ 
+        api = 'https://api-ssl.bitly.com/v3/link/referrers?access_token={0}&link={1}'
+        try:
+            if kwargs.items() != []:
+                api += '&'.join(map(lambda x: x[0] + '=' + str(x[1]), kwargs.items()))
+            formatted = api.format(self._token, link)
+            req = urllib2.Request(formatted)
+            resp = urllib2.urlopen(req)
+            if resp.code not in range(200, 300):
+                raise BitDataException("Link Referrers Error")
+
+        except urllib2.URLError:
+            sys.exit(1)
+
+        return json.loads(resp.read())
+
+
+    
 
 class BitDataException(Exception):
     pass    
