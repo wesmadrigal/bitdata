@@ -4,6 +4,12 @@
 <body>
 <h2>Installation</h2>
 <div>
+  <p>From pip</p>
+  <code>pip install bitdata</code><br>
+</div>
+<br>
+<p>From source distribution</p>
+<div>
   <code>git clone https://github.com/wesmadrigal/bitdata.git</code><br>
   <code>python setup.py install</code><br>
 </div>
